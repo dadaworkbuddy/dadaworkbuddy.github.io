@@ -33,6 +33,7 @@
   .tab.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
   select.ctrl{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;color:var(--ink);}
   .grow{flex:1 1 auto;}
+  #f-search{width:240px;max-width:100%;}
   .ctrl-btns{display:flex;gap:8px;}
   .btn{border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:8px;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s;white-space:nowrap;}
   .btn:hover{border-color:var(--blue);}
@@ -112,7 +113,51 @@
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#1f2937;color:#fff;
     padding:11px 20px;border-radius:10px;font-size:15px;box-shadow:var(--shadow);opacity:0;transition:.25s;pointer-events:none;z-index:99;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  @media(max-width:880px){.kpis{grid-template-columns:repeat(2,1fr)}.g-2,.g-31{grid-template-columns:1fr}}
+  /* ===== 响应式：平板 ===== */
+  @media(max-width:880px){
+    .wrap{padding:16px 16px 50px;}
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .g-2,.g-31{grid-template-columns:1fr;}
+    header.top{padding:16px 20px;}
+    header.top h1{font-size:22px;}
+    .kpi .val{font-size:34px;}
+  }
+  /* ===== 响应式：手机 ===== */
+  @media(max-width:600px){
+    .wrap{padding:10px 12px 40px;}
+    header.top{flex-direction:column;align-items:flex-start;gap:8px;padding:14px 16px;}
+    header.top h1{font-size:20px;}
+    header.top .sub{font-size:13px;}
+    header.top .src{text-align:left;font-size:13px;}
+    .controls{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px;}
+    .seg{width:100%;}
+    .seg-btn{flex:1 1 auto;padding:9px 4px;font-size:15px;}
+    .tabs{width:100%;overflow-x:auto;padding-bottom:2px;}
+    .ctrl-btns{width:100%;}
+    .ctrl-btns .btn{flex:1 1 auto;}
+    #f-search{width:100%;}
+    .filterbar .count{margin-left:0;width:100%;}
+    .meta-row{font-size:13px;gap:12px;padding:8px 14px;}
+    .kpis{gap:10px;}
+    .kpi .val{font-size:30px;}
+    .card{padding:14px 14px;}
+    .card h3{font-size:16px;}
+    .sec-title{font-size:17px;margin:22px 4px 10px;}
+    .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    table{table-layout:auto;min-width:640px;font-size:14px;}
+    th,td{padding:9px 10px;}
+    .d-row{flex-direction:column;gap:2px;}
+    .d-k{flex:0 0 auto;}
+    .d-photos img{width:92px;height:92px;}
+    .remind-grid{grid-template-columns:1fr;}
+    .remind-card .rc-num{font-size:32px;}
+    .remind-card{padding:14px;}
+  }
+  /* ===== 响应式：超窄屏 ===== */
+  @media(max-width:380px){
+    header.top h1{font-size:18px;}
+    .kpi .val{font-size:26px;}
+  }
 </style>
 </head>
 <body>
@@ -237,7 +282,7 @@
         <option value="是">已结案</option>
         <option value="否">未结案</option>
       </select>
-      <input id="f-search" placeholder="搜索问题点关键词…" style="min-width:200px">
+      <input id="f-search" placeholder="搜索问题点关键词…">
       <span class="count" id="tbl-count"></span>
     </div>
     <div class="tbl-scroll">
