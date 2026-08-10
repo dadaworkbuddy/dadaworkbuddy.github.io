@@ -404,7 +404,7 @@ document.getElementById('btn-refresh').onclick=async()=>{
 };
 async function loadData(){
   try{
-    const r=await fetch('./data.json',{cache:'no-store'});
+    const r=await fetch('./data.json?t='+Date.now(),{cache:'no-store'});
     if(!r.ok) return false;
     const j=await r.json();
     if(j && Array.isArray(j.records) && j.records.length){ RECORDS=j.records; RECORDS.forEach((r,i)=>r._i=i); META=j.meta||META; return true; }
@@ -656,7 +656,7 @@ renderAll();
 // 自动同步：每5分钟检测 data.json 是否更新，有变化则静默重载并重算
 async function autoReload(){
   try{
-    const r=await fetch('./data.json',{cache:'no-store'});
+    const r=await fetch('./data.json?t='+Date.now(),{cache:'no-store'});
     if(!r.ok) return false;
     const j=await r.json();
     if(j&&Array.isArray(j.records)&&j.records.length && META.generated_at!==(j.meta&&j.meta.generated_at)){
@@ -665,6 +665,16 @@ async function autoReload(){
   }catch(e){}
   return false;
 }
+
+// 页面打开立即同步一次线上最新数据（不等5分钟轮询）
+(async()=>{
+  const oldAt = META && META.generated_at;
+  if(await loadData() && META.generated_at !== oldAt){
+    renderAll();
+    toast('已同步最新数据 · '+META.generated_at);
+  }
+})();
+
 setInterval(async()=>{ if(await autoReload()){ renderAll(); toast('已自动同步最新数据 · '+META.generated_at); } }, 5*60*1000);
 </script>
 </body>
