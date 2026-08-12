@@ -106,8 +106,70 @@
   .tab-btn.active{background:#fff;color:var(--blue);border-color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);}
   .tab-panel{display:none;}
   .tab-panel.active{display:block;}
-  @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.charts{grid-template-columns:1fr}.kanban{grid-template-columns:1fr}}
-  @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}.tab-nav{flex-wrap:wrap;}}
+  /* ===== 响应式：桌面 / 平板 / 手机 三档 ===== */
+  /* 平板（≤1100）：KPI 三列，其余保持桌面布局 */
+  @media(max-width:1100px){
+    .kpis{grid-template-columns:repeat(3,1fr);}
+  }
+  /* 中平板（≤992）：看板两列，更合理利用横向空间 */
+  @media(max-width:992px){
+    .kanban{grid-template-columns:repeat(2,1fr);}
+  }
+  /* 小平板/大手机（≤768）：分析图表改为单列，图表更大更易读 */
+  @media(max-width:768px){
+    .charts{grid-template-columns:1fr;}
+  }
+  /* 手机（≤600）：整体紧凑化 */
+  @media(max-width:600px){
+    body{padding-bottom:30px;}
+    .wrap{padding:0 14px;}
+    header{padding:16px 16px 15px;}
+    header .wrap{gap:12px;}
+    header .brand{min-width:0;}
+    header .t1{font-size:20px;letter-spacing:.5px;}
+    header .t2{font-size:11px;margin-top:4px;}
+    header .meta{font-size:11px;margin-top:8px;}
+    .tab-nav{width:100%;justify-content:flex-start;gap:8px;}
+    .tab-btn{flex:1;text-align:center;padding:8px 8px;font-size:13px;}
+    .kpis{grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+    .kpi{padding:11px 12px 9px;border-radius:12px;}
+    .kpi .k{font-size:11px;}
+    .kpi .v{font-size:25px;}
+    .kpi .s{font-size:10px;margin-top:5px;}
+    .toolbar{margin:14px 0 2px;}
+    .btn{padding:8px 14px;font-size:12px;}
+    .filterbar{padding:10px 12px;gap:8px 10px;}
+    .filterbar .fstate{min-width:0;font-size:12px;}
+    .filterbar .flabel{font-size:12px;}
+    .panel{padding:12px 12px;border-radius:12px;}
+    .panel h3{font-size:13px;}
+    .panel h3 small{font-size:10px;}
+    .mselect{padding:4px 7px;font-size:11px;}
+    .charts{gap:12px;}
+    .phead{margin-bottom:4px;}
+    .cov-note{font-size:11px;gap:6px 10px;}
+    .board-head{flex-direction:column;align-items:stretch;gap:10px;}
+    .board-head h2{font-size:16px;}
+    .board-head h2 small{display:block;margin-left:0;margin-top:4px;}
+    .filters{flex-direction:column;align-items:stretch;gap:8px;width:100%;}
+    .search{width:100%;}
+    .kanban{grid-template-columns:1fr;gap:12px;}
+    .col{padding:10px;}
+    .col-h{font-size:13px;}
+    .card{padding:10px;margin-bottom:8px;}
+    .desc{font-size:12px;}
+    .content{font-size:11px;}
+    .thumb{width:54px;height:54px;}
+    .foot{font-size:11px;margin-top:22px;}
+  }
+  /* 超窄屏（≤380）：KPI 数值再缩小，避免拥挤 */
+  @media(max-width:380px){
+    header .t1{font-size:18px;}
+    .kpi .v{font-size:22px;}
+    .kpis{gap:8px;}
+    .panel{padding:10px 10px;}
+    .wrap{padding:0 12px;}
+  }
 </style>
 </head>
 <body>
@@ -185,6 +247,7 @@ let DEPTS = Object.keys(DATA.dept_prob_short);
 let colorMap = {};
 function buildColorMap(){ colorMap={}; DEPTS.forEach((d,i)=>colorMap[d]=PALETTE[i%PALETTE.length]); }
 buildColorMap();
+function isSmall(){ return window.innerWidth < 600; }
 document.getElementById('upd').textContent = DATA.updated;
 document.getElementById('ptotal').textContent = DATA.kpis.total_prob;
 
@@ -235,7 +298,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const tab=btn.dataset.tab;
     document.getElementById('panel-'+tab).classList.add('active');
     if(tab==='analysis'){
-      requestAnimationFrame(()=>charts.forEach(c=>c.resize()));
+      requestAnimationFrame(()=>{ renderAll(); renderCoverage(); });
     }
   });
 });
@@ -270,11 +333,12 @@ function renderDeptProb(){
   const dv=dk.map(dp=> state.month ? ((DATA.dept_prob_month[dp]&&DATA.dept_prob_month[dp][state.month])||0) : DATA.dept_prob_short[dp]);
   const z=dk.map((k,i)=>[k,dv[i]]).sort((a,b)=>b[1]-a[1]);
   const ks=z.map(x=>x[0]), vs=z.map(x=>x[1]);
+  const sm1=isSmall();
   dprobC.setOption({
-    grid:{left:96,right:24,top:10,bottom:6,containLabel:true},
+    grid:{left:sm1?76:96,right:sm1?28:24,top:10,bottom:6,containLabel:true},
     tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>p[0].name+'<br/>问题点：'+p[0].value+(state.month?'（'+state.month+'）':'（累计）')},
     xAxis:{type:'value',splitLine:{lineStyle:{color:'#eef2f6'}}},
-    yAxis:{type:'category',data:ks.slice().reverse(),axisLabel:{fontSize:11,color:'#5b6b78',width:90,overflow:'break',interval:0},axisLine:{show:false},axisTick:{show:false}},
+    yAxis:{type:'category',data:ks.slice().reverse(),axisLabel:{fontSize:sm1?10:11,color:'#5b6b78',width:sm1?72:90,overflow:'break',interval:0,rotate:0},axisLine:{show:false},axisTick:{show:false}},
     series:[{type:'bar',data:vs.slice().reverse(),barWidth:'58%',
       itemStyle:{color:(p)=> p.name===state.dept ? '#F57C00' : GRAD(), borderRadius:[0,5,5,0]},
       label:{show:true,position:'right',color:'#5b6b78',fontSize:11}}]
@@ -292,8 +356,9 @@ function renderTimeRank(){
   });
   const z=dk.map((k,i)=>[k,dv[i]]).sort((a,b)=>b[1]-a[1]);
   const ks=z.map(x=>x[0]), vs=z.map(x=>x[1]);
+  const sm2=isSmall();
   timeC.setOption({
-    grid:{left:96,right:34,top:10,bottom:6,containLabel:true},
+    grid:{left:sm2?76:96,right:sm2?36:34,top:10,bottom:6,containLabel:true},
     tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{
       const dp=p[0].name; let info;
       if(state.month){ const o=DATA.dept_time_month[dp]&&DATA.dept_time_month[dp][state.month]; info=o||{total:0,count:0,avg:0}; }
@@ -301,7 +366,7 @@ function renderTimeRank(){
       return dp+'<br/>累计巡检时长：'+p[0].value+' 分钟<br/>巡检次数：'+info.count+' 次（平均 '+info.avg+' 分钟）';
     }},
     xAxis:{type:'value',name:'分钟',splitLine:{lineStyle:{color:'#eef2f6'}}},
-    yAxis:{type:'category',data:ks.slice().reverse(),axisLabel:{fontSize:11,color:'#5b6b78',width:90,overflow:'break',interval:0},axisLine:{show:false},axisTick:{show:false}},
+    yAxis:{type:'category',data:ks.slice().reverse(),axisLabel:{fontSize:sm2?10:11,color:'#5b6b78',width:sm2?72:90,overflow:'break',interval:0,rotate:0},axisLine:{show:false},axisTick:{show:false}},
     series:[{type:'bar',data:vs.slice().reverse(),barWidth:'58%',
       itemStyle:{color:(p)=> p.name===state.dept ? '#F57C00' : new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#00897b'},{offset:1,color:'#0057A0'}]), borderRadius:[0,5,5,0]},
       label:{show:true,position:'right',color:'#5b6b78',fontSize:11,formatter:'{c} min'}}]
@@ -387,8 +452,9 @@ function renderCoverage(){
     data:vs.map((v,i)=>({value:v, itemStyle:{color:colors[i], borderRadius:[0,4,4,0]}})),
     label:{show:true, position:'right', fontSize:10, color:'#5b6b78', formatter:p=>{const rv=real[p.dataIndex]; return rv+'/'+wd;}}
   };
+  const sm3=isSmall();
   covC.setOption({
-    grid:{left:96,right:66,top:10,bottom:26,containLabel:true},
+    grid:{left:sm3?76:96,right:sm3?46:66,top:10,bottom:26,containLabel:true},
     tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{
       const i=p[0].dataIndex; const rv=real[i]; const pct=wd?(rv/wd*100).toFixed(0):0;
       const ont= rv>=wd;
@@ -399,7 +465,7 @@ function renderCoverage(){
       return s;
     }},
     xAxis:{type:'value', max:wd, name:'天', nameTextStyle:{color:'#90a4ae'}, splitLine:{lineStyle:{color:'#eef2f6'}}},
-    yAxis:{type:'category', data:ks, axisLabel:{fontSize:11, color:'#5b6b78', width:90, overflow:'break', interval:0}, axisLine:{show:false}, axisTick:{show:false}},
+    yAxis:{type:'category', data:ks, axisLabel:{fontSize:sm3?10:11, color:'#5b6b78', width:sm3?72:90, overflow:'break', interval:0, rotate:0}, axisLine:{show:false}, axisTick:{show:false}},
     series:[series]
   }, true);
   // 说明标签
@@ -427,7 +493,17 @@ function renderCoverage(){
 covC.on('click', p=> clickDept(p.name));
 renderCoverage();
 
-window.addEventListener('resize',()=>charts.forEach(c=>c.resize()));
+let rsTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(rsTimer);
+  rsTimer = setTimeout(()=>{
+    if(document.getElementById('panel-analysis').classList.contains('active')){
+      renderAll(); renderCoverage();
+    } else {
+      charts.forEach(c=>c.resize());
+    }
+  }, 160);
+});
 
 /* Kanban */
 let curDept='全部', curKey='';
