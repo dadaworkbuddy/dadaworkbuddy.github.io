@@ -57,6 +57,8 @@
   .kpi .hint{font-size:14px;color:var(--muted);margin-top:4px;}
   .kpi.click{cursor:pointer;transition:transform .12s;}
   .kpi.click:hover{transform:translateY(-2px);}
+  .kpi.click .hint{color:var(--blue);text-decoration:underline;text-underline-offset:2px;}
+  .kpi.click:hover .hint{color:#1d4ed8;}
   .grid{display:grid;gap:14px;}
   .g-2{grid-template-columns:1fr 1fr;}
   .g-31{grid-template-columns:1fr 2fr;}
@@ -189,7 +191,6 @@
     <div class="ctrl-btns">
       <button class="btn" id="btn-refresh" title="从同目录 data.json 重新加载最新数据并重算">↻ 刷新数据</button>
       <button class="btn btn-primary" id="btn-src" title="在企业微信中打开原始智能表">↗ 查看原文档</button>
-      <a class="btn" href="/anqing-inspection/" target="_blank" rel="noopener" title="打开「安庆总厂日巡检数据看板」">↗ 日巡检数据看板</a>
     </div>
   </div>
   <div class="meta-row">
@@ -596,7 +597,7 @@ function toggleSub(el){
   body.style.display=open?'none':'block';
   arw.textContent=open?'▸':'▾';
 }
-function toggleDetail(i){ if(expanded.has(i))expanded.delete(i); else expanded.add(i); renderTable(); }
+function toggleDetail(i){ if(expanded.has(i))expanded.delete(i); else { expanded.clear(); expanded.add(i); } renderTable(); }
 function renderTable(){
   const fd=document.getElementById('f-dept').value;
   const fo=document.getElementById('f-owner').value;
@@ -648,8 +649,12 @@ function renderTable(){
 }
 ['f-dept','f-owner','f-status','f-search'].forEach(id=>document.getElementById(id).addEventListener('input',renderTable));
 document.getElementById('kpi-undone').addEventListener('click',()=>{
-  document.getElementById('f-status').value='否'; renderTable();
-  document.querySelector('.sec-title:last-of-type').scrollIntoView({behavior:'smooth'});
+  const undoneBtn = document.querySelector('.seg-btn[data-mode="undone"]');
+  if(undoneBtn) undoneBtn.click();
+  setTimeout(()=>{
+    const sec = document.querySelector('.sec-title:last-of-type');
+    if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 60);
 });
 
 renderAll();
